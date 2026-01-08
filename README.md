@@ -17,7 +17,7 @@ Disables Proxmox **enterprise** repositories and enables the official **no-subsc
 Use this if you do not have a Proxmox subscription and want to avoid update errors.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/apt/switch-to-no-subscription.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/apt/switch-to-no-subscription.sh | bash
 ```
 
 ---
@@ -27,7 +27,7 @@ curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/apt/swi
 Disables lid-close handling via `systemd-logind`, preventing suspend or shutdown when closing the laptop lid.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/utils/laptop_lid.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/utils/laptop_lid.sh | bash
 ```
 
 ---
@@ -48,7 +48,7 @@ Installs and configures Dropbear SSH inside initramfs to allow **remote unlockin
 * Enables networking and initramfs break
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/encryption/01-prepare-initramfs-dropbear.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/encryption/01-prepare-initramfs-dropbear.sh | bash
 ```
 
 ---
@@ -63,7 +63,7 @@ Encrypts the **root ZFS pool** (`rpool/ROOT`) while preserving system data.
 * Requires passphrase entry
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/encryption/02-initramfs-encrypt-root.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/encryption/02-initramfs-encrypt-root.sh | bash
 ```
 
 ---
@@ -82,7 +82,7 @@ Also:
 * Sets up a systemd service to auto-load ZFS keys at boot
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/encryption/03-encrypt-non-root-datasets.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/encryption/03-encrypt-non-root-datasets.sh | bash
 ```
 
 ---
