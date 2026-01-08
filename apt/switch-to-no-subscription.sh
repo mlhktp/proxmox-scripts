@@ -3,42 +3,58 @@ set -euo pipefail
 
 DIST="trixie"
 
-ENTERPRISE_DOMAINS="enterprise.proxmox.com"
+disable_sources() {
+  local file="$1"
 
-echo "==> Disabling Proxmox Enterprise repositories..."
+  if grep -q "^URIs:.*enterprise.proxmox.com" "$file"; then
+    if grep -q "^Enabled:" "$file"; then
+      sed -i 's/^Enabled:.*/Enabled: false/' "$file"
+    else
+      echo "Enabled: false" >> "$file"
+    fi
+    echo "    Disabled enterprise repo in $(basename "$file")"
+  fi
+}
 
-# Comment out enterprise repos in .list files
-grep -rl "$ENTERPRISE_DOMAINS" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | while read -r file; do
-  sed -i 's|^[[:space:]]*deb|# deb|' "$file"
-  sed -i 's|^[[:space:]]*URIs:.*enterprise.proxmox.com|# &|' "$file"
+echo "==> Disabling enterprise repositories (.sources)..."
+
+for f in /etc/apt/sources.list.d/*.sources; do
+  [[ -f "$f" ]] && disable_sources "$f"
 done
 
-echo "==> Checking for existing no-subscription sources..."
+echo "==> Ensuring no-subscription repositories..."
 
-PVE_SOURCES="/etc/apt/sources.list.d/proxmox.sources"
-CEPH_SOURCES="/etc/apt/sources.list.d/ceph.sources"
-
-if [[ ! -f "$PVE_SOURCES" ]]; then
-  echo "==> Creating Proxmox no-subscription source"
-  cat > /etc/apt/sources.list.d/pve-no-subscription.list <<EOF
-deb http://download.proxmox.com/debian/pve ${DIST} pve-no-subscription
+# Proxmox VE
+if ! grep -Rqs "pve-no-subscription" /etc/apt/sources.list.d; then
+  cat > /etc/apt/sources.list.d/pve-no-subscription.sources <<EOF
+Types: deb
+URIs: http://download.proxmox.com/debian/pve
+Suites: ${DIST}
+Components: pve-no-subscription
+Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
 EOF
+  echo "    Added Proxmox no-subscription repo"
 else
-  echo "    Proxmox no-subscription source already present"
+  echo "    Proxmox no-subscription repo already present"
 fi
 
-if [[ ! -f "$CEPH_SOURCES" ]]; then
-  echo "==> Creating Ceph no-subscription source"
-  cat > /etc/apt/sources.list.d/ceph-no-subscription.list <<EOF
-deb http://download.proxmox.com/debian/ceph-squid ${DIST} no-subscription
+# Ceph
+if ! grep -Rqs "no-subscription" /etc/apt/sources.list.d/ceph; then
+  cat > /etc/apt/sources.list.d/ceph-no-subscription.sources <<EOF
+Types: deb
+URIs: http://download.proxmox.com/debian/ceph-squid
+Suites: ${DIST}
+Components: no-subscription
+Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
 EOF
+  echo "    Added Ceph no-subscription repo"
 else
-  echo "    Ceph no-subscription source already present"
+  echo "    Ceph no-subscription repo already present"
 fi
 
 echo "==> Updating package lists..."
 apt update
 
 echo
-echo "✅ Enterprise repositories disabled"
-echo "✅ No-subscription repositories enabled"
+echo "✅ Enterprise repositories disabled via Enabled: false"
+echo "✅ No-subscription repositories ensured"
