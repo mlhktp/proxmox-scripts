@@ -1,15 +1,11 @@
 #!/bin/sh
 set -e
 
-
-require_root() {
-  if [[ $EUID -ne 0 ]]; then
-    echo "[!] Must be run as root"
-    exit 1
-  fi
-}
-
-require_root
+# --- root check (POSIX safe) ---
+if [ "$(id -u)" -ne 0 ]; then
+  echo "[!] Must be run as root"
+  exit 1
+fi
 
 echo "[*] Loading ZFS module..."
 modprobe zfs
@@ -55,11 +51,12 @@ zpool export rpool
 echo
 echo "=================================================="
 echo "ROOT ENCRYPTED."
-echo "Reboot now: reboot -f"
-echo "On reboot, initramfs will be open you should connect to it via ssh -p 4748 root@<IP>"
-echo "run /usr/bin/zfsunlock to unlock the root filesystem."
-echo "Then the root filesystem will be mounted and the boot will continue."
-echo "Connect via ssh root@<IP> after the system has booted."
-echo "Run the encrypt non-root datasets script to encrypt other datasets and complete the setup."
+echo
+echo "NEXT:"
+echo "  reboot -f"
+echo
+echo "On reboot:"
+echo "  1) SSH to initramfs: ssh -p 4748 root@<IP>"
+echo "  2) Run: /usr/bin/zfsunlock"
+echo "  3) System will continue booting"
 echo "=================================================="
-
