@@ -8,20 +8,28 @@ require_root() {
   fi
 }
 
+require_tty() {
+  if [[ ! -t 0 ]] && [[ ! -e /dev/tty ]]; then
+    echo "[!] No TTY available for interactive input"
+    exit 1
+  fi
+}
+
 ask_yes_no() {
-   local prompt="$1"
-   local reply
-   while true; do
-      read -r -p "$prompt [y/N]: " reply
-      case "$reply" in
-         [yY]|[yY][eE][sS]) return 0 ;;
-         ""|[nN]|[nN][oO]) return 1 ;;
-         *) echo "Please answer yes or no." ;;
-      esac
-   done
+  local prompt="$1"
+  local reply
+  while true; do
+    read -r -p "$prompt [y/N]: " reply </dev/tty
+    case "$reply" in
+      [yY]|[yY][eE][sS]) return 0 ;;
+      ""|[nN]|[nN][oO]) return 1 ;;
+      *) echo "Please answer yes or no." ;;
+    esac
+  done
 }
 
 require_root
+require_tty
 
 echo "[*] Installing dropbear-initramfs..."
 apt-get update
@@ -48,7 +56,7 @@ rm -f "$TMP_CONF"
 
 echo
 echo "[*] Paste your SSH PUBLIC key (single line), then press Enter:"
-read -r SSH_KEY
+read -r SSH_KEY </dev/tty
 
 if [[ -z "$SSH_KEY" || "$SSH_KEY" != ssh-* ]]; then
   echo "[!] Invalid or empty SSH public key"
@@ -56,7 +64,6 @@ if [[ -z "$SSH_KEY" || "$SSH_KEY" != ssh-* ]]; then
 fi
 
 AUTHORIZED_KEYS=/etc/dropbear/initramfs/authorized_keys
-FORCED_CMD='command="/usr/bin/zfsunlock"'
 KEY_LINE="no-port-forwarding,no-agent-forwarding,no-x11-forwarding ${SSH_KEY}"
 
 echo
