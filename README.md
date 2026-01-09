@@ -63,7 +63,9 @@ Encrypts the **root ZFS pool** (`rpool/ROOT`) while preserving system data.
 * Requires passphrase entry
 
 ```bash
-wget -O - https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/encryption/02-initramfs-encrypt-root.sh | sh
+wget https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/encryption/02-initramfs-encrypt-root.sh
+chmod +x 02-initramfs-encrypt-root.sh
+./02-initramfs-encrypt-root.sh
 ```
 
 ---
