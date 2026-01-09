@@ -90,6 +90,14 @@ curl -fsSL https://raw.githubusercontent.com/mlhktp/proxmox-scripts/main/encrypt
 ```
 
 ---
+## References
+
+This approach is based on the method described by Robin W. Hunter:
+
+[1] Robin W. Hunter, *Securing Proxmox using ZFS' native encryption*, June 15, 2025  
+    https://bitgrounds.tech/posts/proxmox-zfs-encryption
+
+---
 
 ## License
 
