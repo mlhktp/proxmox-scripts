@@ -8,6 +8,8 @@ These scripts perform destructive operations. **ALL DATA WILL BE DELETED AND REC
 
 Do NOT run on systems with data you cannot afford to lose. Ensure you have verified backups and local console access before proceeding.
 
+The encryption scripts are only tested on Proxmox VE 9.11 on a fresh install and it is a work in progress. Use at your own risk.
+
 ---
 
 ## No-Subscription Repos (`apt/switch-to-no-subscription.sh`)
