@@ -58,9 +58,10 @@ encrypt_dataset() {
   SRC="$1"
   KEY="$2"
   TMP="${SRC}-copy"
-  ENC="${SRC}-encrypted"
 
   echo "[*] Processing dataset: $SRC"
+
+  zfs unmount -f "$SRC" || true
 
   # Skip if already encrypted
   if [[ "$(zfs get -H -o value encryption "$SRC")" != "off" ]]; then
@@ -72,39 +73,36 @@ encrypt_dataset() {
   zfs destroy -r "$TMP" 2>/dev/null || true
 
   # Create encrypted dataset if missing
-  if ! zfs list "$ENC" >/dev/null 2>&1; then
-    echo "  - Snapshotting"
-    zfs snapshot -r "$SRC@copy"
+  echo "  - Snapshotting"
+  zfs snapshot -r "$SRC@copy"
 
-    echo "  - Creating temporary copy"
-    zfs send -R "$SRC@copy" | zfs receive "$TMP"
+  echo "  - Creating temporary copy"
+  zfs send -R "$SRC@copy" | zfs receive "$TMP"
 
-    echo "  - Creating encrypted dataset"
-    zfs create \
-      -o encryption=on \
-      -o keyformat=passphrase \
-      -o keylocation="file://$KEY" \
-      -o acltype=posix \
-      -o xattr=sa \
-      -o atime=off \
-      -o checksum=blake3 \
-      "$ENC"
-  fi
+  zfs destroy -r "$SRC"
+
+  zpool set autotrim=on rpool
+
+  echo "  - Creating encrypted dataset"
+  zfs create \
+    -o encryption=on \
+    -o keyformat=passphrase \
+    -o keylocation="file://$KEY" \
+    -o acltype=posix \
+    -o xattr=sa \
+    -o atime=off \
+    -o checksum=blake3 \
+    -o overlay=off \
+    "$SRC"
 
   # Load key only if needed
-  if [[ "$(zfs get -H -o value keystatus "$ENC")" != "available" ]]; then
-    zfs load-key "$ENC"
+  if [[ "$(zfs get -H -o value keystatus "$SRC")" != "available" ]]; then
+    zfs load-key "$SRC"
   fi
 
-  # Restore data only if empty
-  if ! zfs list -t snapshot "$ENC@copy" >/dev/null 2>&1; then
-    echo "  - Restoring data"
-    zfs send -R "$TMP@copy" | zfs receive "$ENC"
-  fi
+  zfs send -R "$TMP@copy" | zfs receive "$SRC"
 
   echo "  - Switching datasets"
-  zfs destroy -r "$SRC"
-  zfs rename "$ENC" "$SRC"
   zfs destroy -r "$TMP"
 }
 
